@@ -31,6 +31,7 @@
 :template_cloudtrail:
 :template_cloudwatch:
 :template_config:
+:template_deterministic_ec2_instances:
 :template_ec2:
 :template_elasticloadbalancingv2:
 :template_guardduty:
