@@ -379,7 +379,7 @@ Resources:
             Resource: "*"
             Condition:
               StringLike:
-                "kms:EncryptionContext:aws:cloudtrail:arn": !Sub "arn:aws:cloudtrail:*:${AWS::AccountId}:trail/*"
+                "kms:EncryptionContext:aws:cloudtrail:arn": !Sub "arn:${AWS::Partition}:cloudtrail:*:${AWS::AccountId}:trail/*"
           - Sid: Allow CloudTrail to describe key
             Effect: Allow
             Principal:
@@ -399,7 +399,7 @@ Resources:
               StringEquals:
                 "kms:CallerAccount": !Sub "${AWS::AccountId}"
               StringLike:
-                "kms:EncryptionContext:aws:cloudtrail:arn": !Sub "arn:aws:cloudtrail:*:${AWS::AccountId}:trail/*"
+                "kms:EncryptionContext:aws:cloudtrail:arn": !Sub "arn:${AWS::Partition}:cloudtrail:*:${AWS::AccountId}:trail/*"
           - Sid: Allow alias creation during setup
             Effect: Allow
             Principal:
@@ -422,7 +422,7 @@ Resources:
               StringEquals:
                 "kms:CallerAccount": !Sub "${AWS::AccountId}"
               StringLike:
-                "kms:EncryptionContext:aws:cloudtrail:arn": !Sub "arn:aws:cloudtrail:*:${AWS::AccountId}:trail/*"
+                "kms:EncryptionContext:aws:cloudtrail:arn": !Sub "arn:${AWS::Partition}:cloudtrail:*:${AWS::AccountId}:trail/*"
   CloudTrailKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
@@ -881,13 +881,13 @@ Resources:
             Principal:
               Service: "cloudtrail.amazonaws.com"
             Action: "s3:GetBucketAcl"
-            Resource: !Sub arn:aws:s3:::${CloudTrailS3Bucket}
+            Resource: !Sub arn:${AWS::Partition}:s3:::${CloudTrailS3Bucket}
           - Sid: "AWSCloudTrailWrite"
             Effect: Allow
             Principal:
               Service: "cloudtrail.amazonaws.com"
             Action: "s3:PutObject"
-            Resource: !Sub arn:aws:s3:::${CloudTrailS3Bucket}/AWSLogs/${AWS::AccountId}/*
+            Resource: !Sub arn:${AWS::Partition}:s3:::${CloudTrailS3Bucket}/AWSLogs/${AWS::AccountId}/*
             Condition:
               StringEquals:
                 "s3:x-amz-acl": "bucket-owner-full-control"
@@ -919,6 +919,7 @@ Resources:
     Properties: 
       AWSServiceName: config-conforms.amazonaws.com
       Description: my service linked role for config-conforms
+      CustomSuffix: !Select [2, !Split [ /, !Ref AWS::StackId ]]
   S3UploadBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
@@ -932,7 +933,7 @@ Resources:
             Principal: '*'
             Resource:
               !Sub
-                - arn:aws:s3:::isms-conformance-delivery-${AWS::Region}-${X}/*
+                - arn:${AWS::Partition}:s3:::isms-conformance-delivery-${AWS::Region}-${X}/*
                 - X: !Select [0, !Split [-, !Select [2, !Split [/, !Ref AWS::StackId ]]]]
             Condition:
               Bool:
@@ -941,21 +942,21 @@ Resources:
             Effect: Allow
             Principal:
               AWS:
-              - !Sub arn:aws:iam::${AWS::AccountId}:role/aws-service-role/config-conforms.amazonaws.com/AWSServiceRoleForConfigConforms
+              - !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/aws-service-role/config-conforms.amazonaws.com/AWSServiceRoleForConfigConforms
             Action: s3:GetBucketAcl
             Resource:
               !Sub
-                - arn:aws:s3:::isms-conformance-delivery-${AWS::Region}-${X}
+                - arn:${AWS::Partition}:s3:::isms-conformance-delivery-${AWS::Region}-${X}
                 - X: !Select [0, !Split [-, !Select [2, !Split [/, !Ref AWS::StackId ]]]]
           - Sid: AWSConfigConformsBucketDelivery
             Effect: Allow
             Principal:
               AWS:
-              - !Sub arn:aws:iam::${AWS::AccountId}:role/aws-service-role/config-conforms.amazonaws.com/AWSServiceRoleForConfigConforms
+              - !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/aws-service-role/config-conforms.amazonaws.com/AWSServiceRoleForConfigConforms
             Action: s3:PutObject
             Resource:
               !Sub
-                - arn:aws:s3:::isms-conformance-delivery-${AWS::Region}-${X}/AWSLogs/${AWS::AccountId}/Config/*
+                - arn:${AWS::Partition}:s3:::isms-conformance-delivery-${AWS::Region}-${X}/AWSLogs/${AWS::AccountId}/Config/*
                 - X: !Select [0, !Split [-, !Select [2, !Split [/, !Ref AWS::StackId ]]]]
             Condition:
               StringEquals:
@@ -964,11 +965,11 @@ Resources:
             Effect: Allow
             Principal:
               AWS:
-              - !Sub arn:aws:iam::${AWS::AccountId}:role/aws-service-role/config-conforms.amazonaws.com/AWSServiceRoleForConfigConforms
+              - !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/aws-service-role/config-conforms.amazonaws.com/AWSServiceRoleForConfigConforms
             Action: s3:GetObject
             Resource:
               !Sub
-                - arn:aws:s3:::isms-conformance-delivery-${AWS::Region}-${X}/AWSLogs/${AWS::AccountId}/Config/*
+                - arn:${AWS::Partition}:s3:::isms-conformance-delivery-${AWS::Region}-${X}/AWSLogs/${AWS::AccountId}/Config/*
                 - X: !Select [0, !Split [-, !Select [2, !Split [/, !Ref AWS::StackId ]]]]
   ISMSConformancePack:
     Type: AWS::Config::ConformancePack
@@ -977,10 +978,10 @@ Resources:
       ConformancePackName: !Sub ISMS-ConformancePackName-${AWS::StackName}
       DeliveryS3Bucket: !Ref S3UploadBucket
       TemplateS3Uri: !Sub s3://${QSS3BucketName}/${QSS3KeyPrefix}templates/config-rules.template.yaml
-      # TemplateS3Uri: !Sub
-      #   - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/config-rules.template.yaml
-      #   - S3Region: !If [ UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion ]
-      #     S3Bucket: !If [ UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName ]
+      #TemplateS3Uri: !Sub
+       #  - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/config-rules.template.yaml
+       #  - S3Region: !If [ UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion ]
+       #    S3Bucket: !If [ UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName ]
 Outputs:
   SysAdmin:
     Value: !Ref SysAdminGroup
