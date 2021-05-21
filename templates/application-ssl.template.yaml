@@ -3,6 +3,22 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: Provides nesting for required stacks to deploy a full sample web application
   with reverse proxy, ALBs, IAM, and other resources (for demonstration/POC/testing) (qs-1r6f0fdce)
 Metadata:
+  QSLint:
+    Exclusions: [ W9002, W9003, W9004, W9006, W9901]
+  cfn-lint:
+    config:
+      ignore_checks:
+        - E9101
+        - E9904
+        - E9902
+        - E9010
+        - E-IAM-POLICY-ACTION-WILDCARD
+        - E-IAM-POLICY-RESOURCE-WILDCARD
+        - E-CFN-NAFG-W12
+      ignore_reasons:
+        E-IAM-POLICY-ACTION-WILDCARD: (Line 505-527) Part of a Deny/(Line 824 & 1116) Only Option/
+        E-IAM-POLICY-RESOURCE-WILDCARD:
+        E-CFN-NAFG-W12: (line 828 & 1126) EC2 ec2:Describe* API actions do not support resource-level permission/(line 1507) Only Option
   Stack:
     Value: 3
   VersionDate:
@@ -758,8 +774,60 @@ Resources:
           - Sid: GetServerCertificate
             Effect: Allow
             Action:
-            - s3:Get*
-            - s3:List*
+            - s3:getbucketcors
+            - s3:getaccesspointpolicystatus
+            - s3:getaccesspointpolicystatusforobjectlambda
+            - s3:getanalyticsconfiguration
+            - s3:getstoragelensconfiguration
+            - s3:getobject
+            - s3:getaccountpublicaccessblock
+            - s3:getaccesspointconfigurationforobjectlambda
+            - s3:getstoragelensconfigurationtagging
+            - s3:getbucketpolicy
+            - s3:getobjectversionforreplication
+            - s3:getbucketownershipcontrols
+            - s3:getobjecttagging
+            - s3:getaccesspoint
+            - s3:getencryptionconfiguration
+            - s3:getbucketwebsite
+            - s3:getreplicationconfiguration
+            - s3:getbuckettagging
+            - s3:getstoragelensdashboard
+            - s3:getbucketrequestpayment
+            - s3:getbucketpolicystatus
+            - s3:getbucketobjectlockconfiguration
+            - s3:getobjectversiontagging
+            - s3:getobjectacl
+            - s3:getmetricsconfiguration
+            - s3:getbucketlogging
+            - s3:getobjectretention
+            - s3:getobjecttorrent
+            - s3:getobjectlegalhold
+            - s3:getobjectversionacl
+            - s3:getbucketlocation
+            - s3:getjobtagging
+            - s3:getobjectversion
+            - s3:getintelligenttieringconfiguration
+            - s3:getbucketversioning
+            - s3:getaccesspointpolicy
+            - s3:getbucketnotification
+            - s3:getaccesspointforobjectlambda
+            - s3:getaccelerateconfiguration
+            - s3:getobjectversiontorrent
+            - s3:getinventoryconfiguration
+            - s3:getlifecycleconfiguration
+            - s3:getaccesspointpolicyforobjectlambda
+            - s3:getbucketpublicaccessblock
+            - s3:getbucketacl
+            - s3:listmultipartuploadparts
+            - s3:listbucketmultipartuploads
+            - s3:listjobs
+            - s3:listallmybuckets
+            - s3:listbucket
+            - s3:listaccesspoints
+            - s3:listaccesspointsforobjectlambda
+            - s3:liststoragelensconfigurations
+            - s3:listbucketversions
             - s3:Head*
             Resource:
             - !Sub arn:${AWS::Partition}:s3:::${S3AssetsBucket}/*
@@ -780,7 +848,7 @@ Resources:
               - S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
             Effect: Allow
       ManagedPolicyArns:
-       - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+       - !Sub arn:aws:${AWS::Partition}::aws:policy/AmazonSSMManagedInstanceCore
   WebInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -998,9 +1066,61 @@ Resources:
           - Sid: GetServerCertificate
             Effect: Allow
             Action:
-            - s3:Get*
-            - s3:List*
-            - s3:Head*
+              - s3:getbucketcors
+              - s3:getaccesspointpolicystatus
+              - s3:getaccesspointpolicystatusforobjectlambda
+              - s3:getanalyticsconfiguration
+              - s3:getstoragelensconfiguration
+              - s3:getobject
+              - s3:getaccountpublicaccessblock
+              - s3:getaccesspointconfigurationforobjectlambda
+              - s3:getstoragelensconfigurationtagging
+              - s3:getbucketpolicy
+              - s3:getobjectversionforreplication
+              - s3:getbucketownershipcontrols
+              - s3:getobjecttagging
+              - s3:getaccesspoint
+              - s3:getencryptionconfiguration
+              - s3:getbucketwebsite
+              - s3:getreplicationconfiguration
+              - s3:getbuckettagging
+              - s3:getstoragelensdashboard
+              - s3:getbucketrequestpayment
+              - s3:getbucketpolicystatus
+              - s3:getbucketobjectlockconfiguration
+              - s3:getobjectversiontagging
+              - s3:getobjectacl
+              - s3:getmetricsconfiguration
+              - s3:getbucketlogging
+              - s3:getobjectretention
+              - s3:getobjecttorrent
+              - s3:getobjectlegalhold
+              - s3:getobjectversionacl
+              - s3:getbucketlocation
+              - s3:getjobtagging
+              - s3:getobjectversion
+              - s3:getintelligenttieringconfiguration
+              - s3:getbucketversioning
+              - s3:getaccesspointpolicy
+              - s3:getbucketnotification
+              - s3:getaccesspointforobjectlambda
+              - s3:getaccelerateconfiguration
+              - s3:getobjectversiontorrent
+              - s3:getinventoryconfiguration
+              - s3:getlifecycleconfiguration
+              - s3:getaccesspointpolicyforobjectlambda
+              - s3:getbucketpublicaccessblock
+              - s3:getbucketacl
+              - s3:listmultipartuploadparts
+              - s3:listbucketmultipartuploads
+              - s3:listjobs
+              - s3:listallmybuckets
+              - s3:listbucket
+              - s3:listaccesspoints
+              - s3:listaccesspointsforobjectlambda
+              - s3:liststoragelensconfigurations
+              - s3:listbucketversions
+              - s3:Head*
             Resource:
             - !Sub arn:${AWS::Partition}:s3:::${S3AssetsBucket}/*
             - !Sub arn:${AWS::Partition}:s3:::${S3AssetsBucket}
@@ -1014,7 +1134,7 @@ Resources:
             Effect: Allow
             Action:
             - ec2:DescribeVolumes
-            Resource: '*'
+            Resource: !Sub arn:${AWS::Partition}:ec2:::instance/*
           - Sid: getSecret
             Effect: Allow
             Action: 
@@ -1035,7 +1155,7 @@ Resources:
                 - S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
             Effect: Allow
       ManagedPolicyArns:
-       - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+       - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore
   AppInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -1401,7 +1521,7 @@ Resources:
             - s3:GetObject
             - s3:DeleteObject
             Resource:
-            - '*'
+            - !Sub arn:${AWS::Partition}:ec2:::instance/*
           - Sid: ELBListnerAndWAF
             Effect: Allow
             Action:
@@ -1410,13 +1530,13 @@ Resources:
             - elasticloadbalancing:CreateListener
             #- waf-regional:ListWebACLs
             Resource:
-            - '*'
+            - !Sub arn:${AWS::Partition}:ec2:::instance/*
           - Sid: SelfDestruct
             Effect: Allow
             Action:
             - ec2:TerminateInstances
             Resource:
-            - '*'
+            - !Sub arn:${AWS::Partition}:ec2:::instance/*
   PostProcInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:

@@ -1,9 +1,21 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
-Description: Provides the base security, IAM, and access configuration for the AWS account (qs-1r6f0fdc6)
 Metadata:
   QSLint:
-    Exclusions: [E9101, E3005, W9002, W9003, W9004, W9006, ]
+    Exclusions: [W9002, W9003, W9004, W9006]
+  cfn-lint:
+    config:
+      ignore_checks:
+        - E9101
+        - E3005
+        - E-IAM-POLICY-ACTION-WILDCARD
+        - E-IAM-POLICY-RESOURCE-WILDCARD
+        - E-CFN-NAFG-W12
+      ignore_reasons:
+        E-IAM-POLICY-ACTION-WILDCARD: (Line 206-279) ReadOnlyAdminPolicy, by design for envirnoment/ (Line 886 & 888) Part of a Deny statement
+        E-IAM-POLICY-RESOURCE-WILDCARD: (Line 284-302)AWS Billing does not support specifying a resource ARN in the Resource element of an IAM policy statement.
+        E-CFN-NAFG-W12: (Line 87-120) Sysadmin Role, with Deny's inplace/(line 125-141) IAMAdminRole  with Deny's inplace/(Line 146-201) InstanceOpsGroup Permissions/(Line 206-279) ReadOnlyAdminPolicy, by design for envirnoment/(Line 364-433) Needed for Root to manage keys
+Description: Provides the base security, IAM, and access configuration for the AWS account (qs-1r6f0fdc6)
 Parameters:
   EnableLogFileValidation:
     Type: String
@@ -51,10 +63,6 @@ Parameters:
     Description: S3 bucket name for the Quick Start assets. Quick Start bucket name
       can include numbers, lowercase letters, uppercase letters, and hyphens (-).
       It cannot start or end with a hyphen (-). If you are unsure, do not change this value.
-    Type: String
-  QSS3BucketRegion:
-    Default: 'us-east-1'
-    Description: AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.
     Type: String
   QSS3KeyPrefix:
     AllowedPattern: ^[0-9a-zA-Z-/]*$
@@ -287,10 +295,15 @@ Resources:
         Version: 2012-10-17
         Statement:
         - Effect: Allow
-          Action: aws-portal:View*
+          Action:
+          - aws-portal:ViewBilling
+          - aws-portal:ViewPaymentMethods
+          - aws-portal:ViewUsage
           Resource: '*'
         - Effect: Deny
-          Action: aws-portal:*Account
+          Action:
+          - aws-portal:ModifyAccount
+          - aws-portal:ViewAccount
           Resource: '*'
       Groups:
       - !Ref ReadOnlyBillingGroup
@@ -454,7 +467,6 @@ Resources:
           - id: W28
             reason: "The alarm name is defined to identify K-ISMS Quick Start resources."
     Properties:
-      #AlarmName: CloudTrailSecurityGroupChanges
       AlarmDescription: Alarms when an API call is made to create, update or delete
         a Security Group.
       MetricName: SecurityGroupEventCount
@@ -488,7 +500,6 @@ Resources:
             reason: "The alarm name is defined to identify K-ISMS Quick Start resources."
     DependsOn: SecurityGroupChangesAlarm
     Properties:
-      #AlarmName: CloudTrailNetworkAclChanges
       AlarmDescription: Alarms when an API call is made to create, update or delete
         a Network ACL.
       MetricName: NetworkAclEventCount
@@ -522,7 +533,6 @@ Resources:
             reason: "The alarm name is defined to identify K-ISMS Quick Start resources."
     DependsOn: NetworkAclChangesAlarm
     Properties:
-      #AlarmName: CloudTrailGatewayChanges
       AlarmDescription: Alarms when an API call is made to create, update or delete
         a Customer or Internet Gateway.
       MetricName: GatewayEventCount
@@ -558,7 +568,6 @@ Resources:
             reason: "The alarm name is defined to identify K-ISMS Quick Start resources."
     DependsOn: GatewayChangesAlarm
     Properties:
-      #AlarmName: CloudTrailVpcChanges
       AlarmDescription: Alarms when an API call is made to create, update or delete
         a VPC, VPC peering connection or VPC connection to classic.
       MetricName: VpcEventCount
@@ -591,7 +600,6 @@ Resources:
             reason: "The alarm name is defined to identify AWS Landing Zone resources."
     DependsOn: VpcChangesAlarm
     Properties:
-      #AlarmName: CloudTrailEC2InstanceChanges
       AlarmDescription: Alarms when an API call is made to create, terminate, start,
         stop or reboot an EC2 instance.
       MetricName: EC2InstanceEventCount
@@ -632,7 +640,6 @@ Resources:
             reason: "The alarm name is defined to identify AWS Landing Zone resources."
     DependsOn: EC2InstanceChangesAlarm
     Properties:
-      #AlarmName: CloudTrailEC2LargeInstanceChanges
       AlarmDescription: Alarms when an API call is made to create, terminate, start,
         stop or reboot a 4x, 8x, 9x, 10x, 12x, 16x, 18x, 24x, 32x-large EC2 instance.
       MetricName: EC2LargeInstanceEventCount
@@ -665,7 +672,6 @@ Resources:
             reason: "The alarm name is defined to identify AWS Landing Zone resources."
     DependsOn: EC2LargeInstanceChangesAlarm
     Properties:
-      #AlarmName: CloudTrailChanges
       AlarmDescription: Alarms when an API call is made to create, update or delete
         a CloudTrail trail, or to start or stop logging to a trail.
       MetricName: CloudTrailEventCount
@@ -697,7 +703,6 @@ Resources:
             reason: "The alarm name is defined to identify AWS Landing Zone resources."
     DependsOn: CloudTrailChangesAlarm
     Properties:
-      #AlarmName: CloudTrailConsoleSignInFailures
       AlarmDescription: Alarms when an unauthenticated API call is made to sign into
         the console.
       MetricName: ConsoleSignInFailureCount
@@ -729,7 +734,6 @@ Resources:
             reason: "The alarm name is defined to identify AWS Landing Zone resources."
     DependsOn: ConsoleSignInFailuresAlarm
     Properties:
-      #AlarmName: CloudTrailAuthorizationFailures
       AlarmDescription: Alarms when an unauthorized API call is made.
       MetricName: AuthorizationFailureCount
       Namespace: CloudTrailMetrics
@@ -759,7 +763,6 @@ Resources:
             reason: "The alarm name is defined to identify AWS Landing Zone resources."
     DependsOn: AuthorizationFailuresAlarm
     Properties:
-      #AlarmName: IAMPolicyChanges
       AlarmDescription: Alarms when IAM policy changs are made.
       MetricName: IAMPolicyEventCount
       Namespace: CloudTrailMetrics
@@ -800,52 +803,10 @@ Resources:
       Threshold: 1
       TreatMissingData: notBreaching
 
-  # # Create KMS CloudTrail S3 bucket encryption key
-  # S3CloudTrailKey:
-  #   Type: AWS::KMS::Key
-  #   Properties:
-  #     KeyPolicy:
-  #       Version: 2012-10-17
-  #       Id: k-isms-key-cloudtrails3
-  #       Statement:
-  #         - Sid: Enable IAM User Permissions
-  #           Effect: Allow
-  #           Principal:
-  #             AWS: !Join
-  #               - ""
-  #               - - "arn:aws:iam::"
-  #                 - !Ref "AWS::AccountId"
-  #                 - ":root"
-  #           Action: "kms:*"
-  #           Resource: "*"
-  #         - Sid: Allow VPC Flow Logs to use the key
-  #           Effect: Allow
-  #           Principal:
-  #             Service:
-  #               - delivery.logs.amazonaws.com
-  #           Action: "kms:GenerateDataKey*"
-  #           Resource: "*"
-
-  # S3CloudTrailKeyAlias:
-  #   Type: AWS::KMS::Alias
-  #   Properties:
-  #     AliasName: alias/cloudtrails3
-  #     TargetKeyId:
-  #       Ref: S3CloudTrailKey
-
-  # Create CloudTrail encrypted S3 bucket for storage
   CloudTrailS3Bucket:
-    # DependsOn:
-    #   - S3CloudTrailKey
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
-    # Properties:
-    #   BucketEncryption:
-    #     ServerSideEncryptionConfiguration:
-    #       - ServerSideEncryptionByDefault:
-    #           KMSMasterKeyID: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:${S3CloudTrailKeyAlias}"
-    #           SSEAlgorithm: "aws:kms"
     Properties:
       AccessControl: Private
       # Block Public Access Policy
@@ -979,10 +940,6 @@ Resources:
       ConformancePackName: !Sub ISMS-ConformancePackName-${AWS::StackName}
       DeliveryS3Bucket: !Ref S3UploadBucket
       TemplateS3Uri: !Sub s3://${QSS3BucketName}/${QSS3KeyPrefix}templates/config-rules.template.yaml
-      #TemplateS3Uri: !Sub
-       #  - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/config-rules.template.yaml
-       #  - S3Region: !If [ UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion ]
-       #    S3Bucket: !If [ UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName ]
 Outputs:
   SysAdmin:
     Value: !Ref SysAdminGroup
@@ -998,18 +955,10 @@ Outputs:
     Description: "CloudTrail KMS Key Alias"
     Value:
       Ref: "CloudTrailKeyAlias"
-  # S3KMSKeyAlias:
-  #   Description: "S3 KMS Key Alias"
-  #   Value:
-  #     Ref: "S3CloudTrailKeyAlias"
   CloudTrailS3Bucket:
     Description: "Encrypted S3 Bucket for CloudTrail Logs"
     Value:
       Ref: "CloudTrailS3Bucket"
-  # CloudTrailS3BucketPolicy:
-  #   Description: "S3 Bucket Policy for CloudTrail Logs"
-  #   Value:
-  #     Ref: "CloudTrailBucketPolicy"
   CloudTrail:
     Description: "CloudTrail"
     Value:
