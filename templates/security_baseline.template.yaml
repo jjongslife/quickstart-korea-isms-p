@@ -919,7 +919,6 @@ Resources:
     Properties: 
       AWSServiceName: config-conforms.amazonaws.com
       Description: my service linked role for config-conforms
-      CustomSuffix: !Select [2, !Split [ /, !Ref AWS::StackId ]]
   S3UploadBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
