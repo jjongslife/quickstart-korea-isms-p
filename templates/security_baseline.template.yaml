@@ -1,6 +1,9 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
 Description: Provides the base security, IAM, and access configuration for the AWS account (qs-1r6f0fdc6)
+Metadata:
+  QSLint:
+    Exclusions: [E9101, E3005, W9002, W9003, W9004, W9006, ]
 Parameters:
   EnableLogFileValidation:
     Type: String
@@ -74,7 +77,6 @@ Conditions:
   IsPublishToCloudWatchLogs: !Equals
     - !Ref PublishToCloudWatchLogs
     - 'true'
-  UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
   GuardDutyEnabled: !Equals [!Ref EnableGuardDuty, 'enable']
 Resources:
   SysAdminGroup:
