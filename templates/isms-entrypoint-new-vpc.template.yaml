@@ -133,7 +133,6 @@ Resources:
       TimeoutInMinutes: 20
       Parameters:
         QSS3BucketName: !Ref QSS3BucketName
-        QSS3BucketRegion: !Ref QSS3BucketRegion
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
         EnableGuardDuty: !Ref EnableGuardDuty
         CloudWatchLogsGroupName: !Ref CloudWatchLogsGroupName
@@ -159,7 +158,6 @@ Resources:
         pDBPrivateSubnetACIDR: 10.100.194.0/21
         pDBPrivateSubnetBCIDR: 10.100.212.0/21
         QSS3BucketName: !Ref QSS3BucketName
-        QSS3BucketRegion: !Ref QSS3BucketRegion
         QSS3KeyPrefix: !Sub ${QSS3KeyPrefix}submodules/quickstart-compliance-common/
   ManagementVpcTemplate:
     Type: AWS::CloudFormation::Stack
@@ -241,7 +239,7 @@ Resources:
     Properties:
       TemplateURL:
         !Sub
-          - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/application-ssl.template.yaml'
+          - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/application-ssl.template.yaml
           - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
             S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
       TimeoutInMinutes: 30

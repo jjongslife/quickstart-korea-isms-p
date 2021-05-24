@@ -8,13 +8,13 @@ Metadata:
       ignore_checks:
         - E9101
         - E3005
-        - E-IAM-POLICY-ACTION-WILDCARD
-        - E-IAM-POLICY-RESOURCE-WILDCARD
-        - E-CFN-NAFG-W12
+        - EIAMPOLICYACTIONWILDCARD
+        - EIAMPOLICYRESOURCEWILDCARD
+        - ECFNNAFGW12
       ignore_reasons:
-        E-IAM-POLICY-ACTION-WILDCARD: (Line 206-279) ReadOnlyAdminPolicy, by design for envirnoment/ (Line 886 & 888) Part of a Deny statement
-        E-IAM-POLICY-RESOURCE-WILDCARD: (Line 284-302)AWS Billing does not support specifying a resource ARN in the Resource element of an IAM policy statement.
-        E-CFN-NAFG-W12: (Line 87-120) Sysadmin Role, with Deny's inplace/(line 125-141) IAMAdminRole  with Deny's inplace/(Line 146-201) InstanceOpsGroup Permissions/(Line 206-279) ReadOnlyAdminPolicy, by design for envirnoment/(Line 364-433) Needed for Root to manage keys
+        EIAMPOLICYACTIONWILDCARD: (Line 206-279) ReadOnlyAdminPolicy, by design for envirnoment/ (Line 886 & 888) Part of a Deny statement
+        EIAMPOLICYRESOURCEWILDCARD: (Line 284-302)AWS Billing does not support specifying a resource ARN in the Resource element of an IAM policy statement.
+        ECFNNAFGW12: (Line 87-120) Sysadmin Role, with Deny's inplace/(line 125-141) IAMAdminRole  with Deny's inplace/(Line 146-201) InstanceOpsGroup Permissions/(Line 206-279) ReadOnlyAdminPolicy, by design for envirnoment/(Line 364-433) Needed for Root to manage keys
 Description: Provides the base security, IAM, and access configuration for the AWS account (qs-1r6f0fdc6)
 Parameters:
   EnableLogFileValidation:

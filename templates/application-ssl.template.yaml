@@ -4,7 +4,7 @@ Description: Provides nesting for required stacks to deploy a full sample web ap
   with reverse proxy, ALBs, IAM, and other resources (for demonstration/POC/testing) (qs-1r6f0fdce)
 Metadata:
   QSLint:
-    Exclusions: [ W9002, W9003, W9004, W9006, W9901]
+    Exclusions: [ W9002, W9003, W9004, W9006 ]
   cfn-lint:
     config:
       ignore_checks:
@@ -12,13 +12,12 @@ Metadata:
         - E9904
         - E9902
         - E9010
-        - E-IAM-POLICY-ACTION-WILDCARD
-        - E-IAM-POLICY-RESOURCE-WILDCARD
-        - E-CFN-NAFG-W12
+        - W9901
+        - EIAMPOLICYACTIONWILDCARD
+        - ECFNNAFGW12
       ignore_reasons:
-        E-IAM-POLICY-ACTION-WILDCARD: (Line 505-527) Part of a Deny/(Line 824 & 1116) Only Option/
-        E-IAM-POLICY-RESOURCE-WILDCARD:
-        E-CFN-NAFG-W12: (line 828 & 1126) EC2 ec2:Describe* API actions do not support resource-level permission/(line 1507) Only Option
+        EIAMPOLICYACTIONWILDCARD: (Line 505-527) Part of a Deny/(Line 824 & 1116) Only Option/
+        ECFNNAFGW12: (line 828 & 1126) EC2 ec2:Describe* API actions do not support resource-level permission/(line 1507) Only Option
   Stack:
     Value: 3
   VersionDate:
