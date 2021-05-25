@@ -5,19 +5,6 @@ Description: Provides nesting for required stacks to deploy a full sample web ap
 Metadata:
   QSLint:
     Exclusions: [ W9002, W9003, W9004, W9006 ]
-  cfn-lint:
-    config:
-      ignore_checks:
-        - E9101
-        - E9904
-        - E9902
-        - E9010
-        - W9901
-        - EIAMPOLICYACTIONWILDCARD
-        - ECFNNAFGW12
-      ignore_reasons:
-        EIAMPOLICYACTIONWILDCARD: (Line 505-527) Part of a Deny/(Line 824 & 1116) Only Option/
-        ECFNNAFGW12: (line 828 & 1126) EC2 ec2:Describe* API actions do not support resource-level permission/(line 1507) Only Option
   Stack:
     Value: 3
   VersionDate:
@@ -702,7 +689,7 @@ Resources:
             Action:
             - ec2:TerminateInstances
             Resource:
-            - '*'
+            - !Sub arn:${AWS::Partition}:ec2:::instance/*
   PreProcInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -754,6 +741,13 @@ Resources:
         Timeout: PT10M
   WebInstanceRole:
     Type: AWS::IAM::Role
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyActionWildcard
+          ignore_reasons:
+            EIAMPolicyActionWildcard: This is only option for s3:Head*
     Properties:
       AssumeRolePolicyDocument:
         Version: 2012-10-17
@@ -847,7 +841,7 @@ Resources:
               - S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
             Effect: Allow
       ManagedPolicyArns:
-       - !Sub arn:aws:${AWS::Partition}::aws:policy/AmazonSSMManagedInstanceCore
+       - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore
   WebInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -1046,6 +1040,13 @@ Resources:
       MetricName: CPUUtilization
   AppInstanceRole:
     Type: AWS::IAM::Role
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyActionWildcard
+          ignore_reasons:
+            EIAMPolicyActionWildcard: This is only option for s3:Head*
     Properties:
       AssumeRolePolicyDocument:
         Version: 2012-10-17
@@ -1138,7 +1139,7 @@ Resources:
             Effect: Allow
             Action: 
             - secretsmanager:GetSecretValue
-            Resource: "*"
+            Resource: !Sub arn:${AWS::Partition}:ec2:::instance/*
       - PolicyName: aws-quick-start-s3-policy
         PolicyDocument:
           Version: '2012-10-17'
